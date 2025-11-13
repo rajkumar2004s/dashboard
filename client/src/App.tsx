@@ -11,25 +11,34 @@ import EmployeeForm from "./pages/employee-form";
 import ManagerDashboard from "./pages/manager-dashboard";
 import DirectorDashboard from "./pages/director-dashboard";
 import CeoDashboard from "./pages/ceo-dashboard";
+import Onboarding from "./pages/onboarding";
 import NotFound from "./pages/not-found";
 
-function ProtectedRoute({ component: Component, allowedRoles }: { 
-  component: React.ComponentType; 
+type RouteGuardProps = {
+  component: React.ComponentType;
   allowedRoles?: string[];
-}) {
-  const { user, isLoading } = useAuth();
+};
+
+function ProtectedRoute({ component: Component, allowedRoles }: RouteGuardProps) {
+  const { session, profile, isLoading, needsOnboarding } = useAuth();
 
   if (isLoading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-muted-foreground">Loading...</div>
-    </div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
   }
 
-  if (!user) {
+  if (!session) {
     return <Redirect to="/login" />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (needsOnboarding) {
+    return <Redirect to="/onboarding" />;
+  }
+
+  if (allowedRoles && (!profile || !allowedRoles.includes(profile.role))) {
     return <Redirect to="/" />;
   }
 
@@ -37,20 +46,24 @@ function ProtectedRoute({ component: Component, allowedRoles }: {
 }
 
 function HomePage() {
-  const { user } = useAuth();
+  const { session, profile, needsOnboarding } = useAuth();
 
-  if (!user) {
+  if (!session) {
     return <Redirect to="/login" />;
   }
 
-  switch (user.role) {
-    case 'employee':
+  if (needsOnboarding || !profile) {
+    return <Redirect to="/onboarding" />;
+  }
+
+  switch (profile.role) {
+    case "employee":
       return <Redirect to="/employee/contribute" />;
-    case 'manager':
+    case "manager":
       return <Redirect to="/manager/dashboard" />;
-    case 'director':
+    case "director":
       return <Redirect to="/director/dashboard" />;
-    case 'ceo':
+    case "ceo":
       return <Redirect to="/ceo/dashboard" />;
     default:
       return <Redirect to="/login" />;
@@ -61,20 +74,23 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/onboarding">
+        {() => <ProtectedRoute component={Onboarding} />}
+      </Route>
       <Route path="/">
         {() => <ProtectedRoute component={HomePage} />}
       </Route>
       <Route path="/employee/contribute">
-        {() => <ProtectedRoute component={EmployeeForm} allowedRoles={['employee']} />}
+        {() => <ProtectedRoute component={EmployeeForm} allowedRoles={["employee"]} />}
       </Route>
       <Route path="/manager/dashboard">
-        {() => <ProtectedRoute component={ManagerDashboard} allowedRoles={['manager']} />}
+        {() => <ProtectedRoute component={ManagerDashboard} allowedRoles={["manager"]} />}
       </Route>
       <Route path="/director/dashboard">
-        {() => <ProtectedRoute component={DirectorDashboard} allowedRoles={['director']} />}
+        {() => <ProtectedRoute component={DirectorDashboard} allowedRoles={["director"]} />}
       </Route>
       <Route path="/ceo/dashboard">
-        {() => <ProtectedRoute component={CeoDashboard} allowedRoles={['ceo']} />}
+        {() => <ProtectedRoute component={CeoDashboard} allowedRoles={["ceo"]} />}
       </Route>
       <Route component={NotFound} />
     </Switch>
