@@ -1,0 +1,185 @@
+Build a complete internal workflow + analytics dashboard application for a company named NxtWave using:
+
+React + TypeScript + Vite
+
+Supabase (Auth + DB)
+
+Static seed data for demo
+
+React-Toastify for notifications
+
+Chart.js for analytics
+
+Professional UI with ONLY solid colors (no gradients)
+
+Vercel V0-compatible component structure
+
+Role-based workflow: Employee → Manager → Director → CEO
+
+📌 BUSINESS CONTEXT
+
+NxtWave has 3 products:
+
+NIAT
+
+Intensive
+
+Academy
+
+Each product has multiple departments, each department has one manager.
+Employees belong to one department but may work across multiple products.
+
+We want to automate contribution reporting and approval workflow that currently happens manually in sheets.
+
+📌 FEATURES TO BUILD
+1. Employee Contribution Form
+
+Employee logs in via Supabase Auth.
+
+Form shows checkboxes: NIAT, Intensive, Academy.
+
+Selecting a product dynamically shows departments under that product.
+
+For each selected product:
+
+Department dropdown
+
+Contribution percentage input
+
+Total contribution % must = 100.
+
+On submit:
+
+Save to employee_contributions
+
+Status = "submitted_to_manager"
+
+Show Toastify success/error.
+
+2. Manager Dashboard
+
+Manager logs in.
+
+Sees employees only from their department.
+
+Can approve or reject submissions.
+
+Approve → "approved_by_manager"
+
+Reject (with comment) → "rejected_by_manager"
+
+Toastify for actions.
+
+3. Director Dashboard
+
+Directors see manager-approved submissions.
+
+Can approve or reject.
+
+Approve → "approved_by_director"
+
+4. CEO Dashboard (Chart.js)
+
+Use solid color palette only (NO gradients).
+
+Charts required:
+
+Product-wise contribution pie chart
+
+Department-wise bar chart
+
+Approval-status donut chart
+
+Monthly trend line chart (static data)
+
+Cards for top contributors
+
+📌 STATIC SEED DATA (USE THIS DIRECTLY)
+products.json
+[
+  { "id": "p1", "name": "NIAT" },
+  { "id": "p2", "name": "Intensive" },
+  { "id": "p3", "name": "Academy" }
+]
+
+departments.json
+[
+  { "id": "d1", "name": "Placement Department", "product_id": "p1", "manager_id": "m1" },
+  { "id": "d2", "name": "Academics Department", "product_id": "p3", "manager_id": "m2" },
+  { "id": "d3", "name": "Instructor Department", "product_id": "p2", "manager_id": "m3" }
+]
+
+employees.json
+[
+  { "id": "e1", "name": "Awais", "email": "awais@nxtwave.com", "department_id": "d1" },
+  { "id": "e2", "name": "Nikhil", "email": "nikhil@nxtwave.com", "department_id": "d2" },
+  { "id": "e3", "name": "Priya", "email": "priya@nxtwave.com", "department_id": "d3" }
+]
+
+managers.json
+[
+  { "id": "m1", "name": "Ravi", "department_id": "d1" },
+  { "id": "m2", "name": "Anita", "department_id": "d2" },
+  { "id": "m3", "name": "Lokesh", "department_id": "d3" }
+]
+
+directors.json
+[
+  { "id": "dir1", "name": "Suresh", "product_id": "p1" },
+  { "id": "dir2", "name": "Divya", "product_id": "p2" },
+  { "id": "dir3", "name": "Rajesh", "product_id": "p3" }
+]
+
+employee_contributions.json
+[
+  {
+    "id": "c1",
+    "employee_id": "e1",
+    "product_id": "p1",
+    "department_id": "d1",
+    "contribution_percent": 60,
+    "status": "submitted_to_manager"
+  },
+  {
+    "id": "c2",
+    "employee_id": "e1",
+    "product_id": "p3",
+    "department_id": "d1",
+    "contribution_percent": 40,
+    "status": "approved_by_manager"
+  },
+  {
+    "id": "c3",
+    "employee_id": "e2",
+    "product_id": "p3",
+    "department_id": "d2",
+    "contribution_percent": 100,
+    "status": "approved_by_director"
+  }
+]
+
+📌 WHAT YOU MUST GENERATE
+✔ Full component structure
+✔ Page layout for:
+
+Login
+
+Employee Form
+
+Manager Dashboard
+
+Director Dashboard
+
+CEO Dashboard
+
+✔ Supabase schema (tables + relations)
+✔ CRUD helpers for Supabase
+✔ UI components using solid colors
+✔ Chart.js components
+✔ Workflow logic
+✔ TypeScript interfaces
+✔ Routing (react-router)
+✔ Example state/props usage
+✔ Separate mock data layer (using the static seed data)
+
+Make everything clean, structured, and fully compatible with V0 by Vercel so it can auto-generate code.
