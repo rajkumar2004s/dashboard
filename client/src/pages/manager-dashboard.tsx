@@ -39,7 +39,8 @@ interface RejectionState {
 }
 
 export default function ManagerDashboard() {
-  const { profile } = useAuth();
+  const { currentUser } = useAuth();
+  const profile = currentUser; // Alias for compatibility
   const [rejectionComments, setRejectionComments] = useState<RejectionState>({});
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
@@ -243,20 +244,21 @@ export default function ManagerDashboard() {
                                 <div className="flex gap-2">
                                   <Button
                                     size="sm"
-                                    className="bg-chart-2 text-white hover:bg-chart-2/90"
+                                    className="bg-chart-2 text-white hover:bg-chart-2/90 shadow-sm transition-all duration-200 hover:shadow-md"
                                     onClick={() => handleApprove(item.id)}
                                     disabled={approveMutation.isPending}
                                   >
-                                    <CheckCircle className="mr-1 h-4 w-4" />
+                                    <CheckCircle className="mr-1.5 h-4 w-4" />
                                     Approve
                                   </Button>
                                   <Button
                                     size="sm"
                                     variant="destructive"
+                                    className="shadow-sm transition-all duration-200 hover:shadow-md"
                                     onClick={() => handleReject(item.id)}
                                     disabled={rejectMutation.isPending}
                                   >
-                                    <XCircle className="mr-1 h-4 w-4" />
+                                    <XCircle className="mr-1.5 h-4 w-4" />
                                     Reject
                                   </Button>
                                 </div>

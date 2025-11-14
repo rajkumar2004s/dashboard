@@ -1,5 +1,5 @@
-import { supabase } from "@/lib/supabase";
 import type { UserRole } from "@/types/domain";
+import { mockUsers } from "@/data/mockData";
 
 interface CreateManagedUserInput {
   name: string;
@@ -10,15 +10,19 @@ interface CreateManagedUserInput {
 }
 
 export async function createManagedUser(payload: CreateManagedUserInput) {
-  const { data, error } = await supabase.functions.invoke("create-managed-user", {
-    body: payload,
-  });
-
-  if (error) {
-    console.error("[supabase.functions] create-managed-user failed", error);
-    throw new Error(error.message ?? "Unable to create user");
-  }
-
-  return data;
+  // In mock mode, just return success
+  // In a real app, this would create a user via Supabase Edge Function
+  console.log("[mock] createManagedUser called with:", payload);
+  
+  // Simulate async operation
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  
+  return {
+    success: true,
+    message: "User created successfully (mock mode)",
+    user: {
+      id: `mock-${Date.now()}`,
+      ...payload,
+    },
+  };
 }
-

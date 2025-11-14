@@ -3,15 +3,14 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { UserSelector } from "@/components/UserSelector";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import Login from "./pages/login";
 import EmployeeForm from "./pages/employee-form";
 import ManagerDashboard from "./pages/manager-dashboard";
 import DirectorDashboard from "./pages/director-dashboard";
 import CeoDashboard from "./pages/ceo-dashboard";
-import Onboarding from "./pages/onboarding";
 import NotFound from "./pages/not-found";
 
 type RouteGuardProps = {
@@ -20,7 +19,7 @@ type RouteGuardProps = {
 };
 
 function ProtectedRoute({ component: Component, allowedRoles }: RouteGuardProps) {
-  const { session, profile, isLoading, needsOnboarding } = useAuth();
+  const { currentUser, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -30,15 +29,15 @@ function ProtectedRoute({ component: Component, allowedRoles }: RouteGuardProps)
     );
   }
 
-  if (!session) {
-    return <Redirect to="/login" />;
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">No user selected</div>
+      </div>
+    );
   }
 
-  if (needsOnboarding) {
-    return <Redirect to="/onboarding" />;
-  }
-
-  if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
+  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
     return <Redirect to="/" />;
   }
 
@@ -46,21 +45,17 @@ function ProtectedRoute({ component: Component, allowedRoles }: RouteGuardProps)
 }
 
 function HomePage() {
-  const { session, profile, needsOnboarding } = useAuth();
+  const { currentUser } = useAuth();
 
-  if (!session) {
-    return <Redirect to="/login" />;
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">No user selected</div>
+      </div>
+    );
   }
 
-  if (needsOnboarding) {
-    return <Redirect to="/onboarding" />;
-  }
-
-  if (!profile) {
-    return <Redirect to="/login" />;
-  }
-
-  switch (profile.role) {
+  switch (currentUser.role) {
     case 'employee':
       return <Redirect to="/employee/contribute" />;
     case "manager":
@@ -70,32 +65,39 @@ function HomePage() {
     case "ceo":
       return <Redirect to="/ceo/dashboard" />;
     default:
-      return <Redirect to="/login" />;
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-muted-foreground">Unknown role</div>
+        </div>
+      );
   }
 }
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/login" component={Login} />
-      <Route path="/onboarding" component={Onboarding} />
-      <Route path="/">
-        {() => <ProtectedRoute component={HomePage} />}
-      </Route>
-      <Route path="/employee/contribute">
-        {() => <ProtectedRoute component={EmployeeForm} allowedRoles={["employee"]} />}
-      </Route>
-      <Route path="/manager/dashboard">
-        {() => <ProtectedRoute component={ManagerDashboard} allowedRoles={["manager"]} />}
-      </Route>
-      <Route path="/director/dashboard">
-        {() => <ProtectedRoute component={DirectorDashboard} allowedRoles={["director"]} />}
-      </Route>
-      <Route path="/ceo/dashboard">
-        {() => <ProtectedRoute component={CeoDashboard} allowedRoles={["ceo"]} />}
-      </Route>
-      <Route component={NotFound} />
-    </Switch>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <UserSelector />
+        <Switch>
+          <Route path="/">
+            {() => <ProtectedRoute component={HomePage} />}
+          </Route>
+          <Route path="/employee/contribute">
+            {() => <ProtectedRoute component={EmployeeForm} allowedRoles={["employee"]} />}
+          </Route>
+          <Route path="/manager/dashboard">
+            {() => <ProtectedRoute component={ManagerDashboard} allowedRoles={["manager"]} />}
+          </Route>
+          <Route path="/director/dashboard">
+            {() => <ProtectedRoute component={DirectorDashboard} allowedRoles={["director"]} />}
+          </Route>
+          <Route path="/ceo/dashboard">
+            {() => <ProtectedRoute component={CeoDashboard} allowedRoles={["ceo"]} />}
+          </Route>
+          <Route component={NotFound} />
+        </Switch>
+      </div>
+    </div>
   );
 }
 

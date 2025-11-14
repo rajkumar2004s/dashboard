@@ -18,7 +18,8 @@ interface ContributionEntry {
 }
 
 export default function EmployeeForm() {
-  const { profile } = useAuth();
+  const { currentUser } = useAuth();
+  const profile = currentUser; // Alias for compatibility
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [entries, setEntries] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);

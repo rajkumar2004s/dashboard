@@ -22,13 +22,26 @@ export default function Onboarding() {
   const { session, profile, needsOnboarding, completeProfile, isLoading } = useAuth();
   const [, navigate] = useLocation();
 
-  const [fullName, setFullName] = useState(session?.user.user_metadata?.full_name ?? "");
-  const [role, setRole] = useState<UserRole | "">("");
-  const [productId, setProductId] = useState<string>("");
-  const [departmentId, setDepartmentId] = useState<string>("");
+  // Pre-populate with existing profile data if available
+  const [fullName, setFullName] = useState(
+    profile?.name ?? session?.user.user_metadata?.full_name ?? ""
+  );
+  const [role, setRole] = useState<UserRole | "">(profile?.role ?? "");
+  const [productId, setProductId] = useState<string>(profile?.productId ?? "");
+  const [departmentId, setDepartmentId] = useState<string>(profile?.departmentId ?? "");
   const [products, setProducts] = useState<Product[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Update form when profile loads
+  useEffect(() => {
+    if (profile) {
+      setFullName(profile.name ?? "");
+      setRole(profile.role ?? "");
+      setProductId(profile.productId ?? "");
+      setDepartmentId(profile.departmentId ?? "");
+    }
+  }, [profile]);
 
   // Allow direct access to onboarding - don't redirect away
   // Users can access /onboarding directly to update their profile
@@ -102,6 +115,7 @@ export default function Onboarding() {
     }
   };
 
+  // Show loading only if we're checking auth, not if we're already on onboarding
   if (isLoading && !session) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -110,20 +124,50 @@ export default function Onboarding() {
     );
   }
 
+  // If no session, redirect to login
+  if (!session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Sign In Required</CardTitle>
+            <CardDescription>Please sign in to complete your profile setup.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate("/login")} className="w-full">
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-3xl shadow-lg border-border">
         <CardHeader className="space-y-3">
-          <CardTitle className="text-2xl">Welcome to NxtWave Workflow</CardTitle>
+          <CardTitle className="text-2xl">
+            {profile ? "Update Your Profile" : "Welcome to NxtWave Workflow"}
+          </CardTitle>
           <CardDescription>
-            Tell us about your role so we can configure dashboards, permissions, and workflows tailored to your responsibilities.
+            {profile
+              ? "Update your role and department information to configure your dashboard access."
+              : "Tell us about your role so we can configure dashboards, permissions, and workflows tailored to your responsibilities."}
           </CardDescription>
           <div className="flex flex-wrap gap-2 pt-2">
             <Badge variant="secondary" className="uppercase tracking-wide text-xs">
               {session?.user.email}
             </Badge>
             {profile?.role && (
-              <Badge className="bg-chart-2/20 text-chart-2 border-chart-2/30 text-xs">Existing role: {profile.role}</Badge>
+              <Badge className="bg-chart-2/20 text-chart-2 border-chart-2/30 text-xs">
+                Current role: {profile.role}
+              </Badge>
+            )}
+            {needsOnboarding && (
+              <Badge variant="outline" className="text-xs">
+                Profile Incomplete
+              </Badge>
             )}
           </div>
         </CardHeader>

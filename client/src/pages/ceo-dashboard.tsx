@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { CheckCircle, XCircle } from "lucide-react";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -54,7 +55,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default function CeoDashboard() {
-  const { profile } = useAuth();
+  const { currentUser } = useAuth();
+  const profile = currentUser; // Alias for compatibility
   const isCEO = profile?.role === "ceo";
   
   const {
@@ -250,18 +252,21 @@ export default function CeoDashboard() {
                             <div className="flex gap-2">
                               <Button
                                 size="sm"
-                                className="bg-chart-4 text-white hover:bg-chart-4/90"
+                                className="bg-chart-4 text-white hover:bg-chart-4/90 shadow-sm transition-all duration-200 hover:shadow-md"
                                 onClick={() => ceoApproveMutation.mutate({ id: item.id, status: "approved_by_ceo" })}
                                 disabled={ceoApproveMutation.isPending}
                               >
+                                <CheckCircle className="mr-1.5 h-4 w-4" />
                                 Approve
                               </Button>
                               <Button
                                 size="sm"
                                 variant="destructive"
+                                className="shadow-sm transition-all duration-200 hover:shadow-md"
                                 onClick={() => ceoApproveMutation.mutate({ id: item.id, status: "overridden_by_ceo" })}
                                 disabled={ceoApproveMutation.isPending}
                               >
+                                <XCircle className="mr-1.5 h-4 w-4" />
                                 Override
                               </Button>
                             </div>
@@ -340,7 +345,17 @@ function buildAnalytics(contributions: ContributionWithRelations[]) {
       {
         label: "Contribution %",
         data: Object.keys(departmentTotals).length > 0 ? Object.values(departmentTotals) : [0],
-        backgroundColor: COLORS.chart3,
+        backgroundColor: [
+          COLORS.chart1,
+          COLORS.chart2,
+          COLORS.chart3,
+          COLORS.chart4,
+          COLORS.chart5,
+          "hsl(var(--chart-1) / 0.7)",
+          "hsl(var(--chart-2) / 0.7)",
+        ],
+        borderRadius: 8,
+        borderSkipped: false,
       },
     ],
   };
@@ -365,10 +380,14 @@ function buildAnalytics(contributions: ContributionWithRelations[]) {
         label: "Submissions",
         data: orderedMonths.length > 0 ? orderedMonths.map((month) => monthlyTotals[month]) : [0],
         borderColor: COLORS.chart1,
-        backgroundColor: COLORS.chart1,
-        tension: 0.3,
-        fill: false,
-        pointRadius: 5,
+        backgroundColor: "hsl(var(--chart-1) / 0.1)",
+        tension: 0.4,
+        fill: true,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        pointBackgroundColor: COLORS.chart1,
+        pointBorderColor: "hsl(var(--background))",
+        pointBorderWidth: 2,
       },
     ],
   };
@@ -446,28 +465,141 @@ function renderRank(index: number) {
   return `#${index + 1}`;
 }
 
+// Enhanced Chart.js styling with modern design
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
       position: "bottom" as const,
+      labels: {
+        padding: 15,
+        font: {
+          size: 12,
+          weight: "500" as const,
+          family: "'Inter', system-ui, sans-serif",
+        },
+        usePointStyle: true,
+        pointStyle: "circle",
+        color: "hsl(var(--foreground))",
+      },
     },
+    tooltip: {
+      backgroundColor: "hsl(var(--popover))",
+      titleColor: "hsl(var(--popover-foreground))",
+      bodyColor: "hsl(var(--popover-foreground))",
+      borderColor: "hsl(var(--border))",
+      borderWidth: 1,
+      padding: 12,
+      titleFont: {
+        size: 14,
+        weight: "600" as const,
+      },
+      bodyFont: {
+        size: 13,
+      },
+      displayColors: true,
+      boxPadding: 6,
+      cornerRadius: 8,
+    },
+  },
+  animation: {
+    animateRotate: true,
+    animateScale: true,
+    duration: 1000,
+    easing: "easeOutQuart" as const,
   },
 };
 
 const barOptions = {
   ...chartOptions,
   scales: {
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        font: {
+          size: 11,
+          family: "'Inter', system-ui, sans-serif",
+        },
+        color: "hsl(var(--muted-foreground))",
+      },
+    },
     y: {
       beginAtZero: true,
+      grid: {
+        color: "hsl(var(--border))",
+        lineWidth: 1,
+      },
+      ticks: {
+        font: {
+          size: 11,
+          family: "'Inter', system-ui, sans-serif",
+        },
+        color: "hsl(var(--muted-foreground))",
+        callback: function (value: any) {
+          return value + "%";
+        },
+      },
+    },
+  },
+  plugins: {
+    ...chartOptions.plugins,
+    legend: {
+      display: false,
     },
   },
 };
 
 const lineOptions = {
   ...chartOptions,
+  scales: {
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        font: {
+          size: 11,
+          family: "'Inter', system-ui, sans-serif",
+        },
+        color: "hsl(var(--muted-foreground))",
+      },
+    },
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: "hsl(var(--border))",
+        lineWidth: 1,
+      },
+      ticks: {
+        font: {
+          size: 11,
+          family: "'Inter', system-ui, sans-serif",
+        },
+        color: "hsl(var(--muted-foreground))",
+        stepSize: 1,
+      },
+    },
+  },
   plugins: {
     ...chartOptions.plugins,
+    legend: {
+      ...chartOptions.plugins.legend,
+      display: true,
+    },
+  },
+  elements: {
+    line: {
+      borderWidth: 3,
+      tension: 0.4,
+    },
+    point: {
+      radius: 6,
+      hoverRadius: 8,
+      borderWidth: 2,
+      backgroundColor: "hsl(var(--background))",
+    },
   },
 };
