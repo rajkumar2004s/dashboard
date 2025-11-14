@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
@@ -92,53 +91,11 @@ export default function DirectorDashboard() {
     onSuccess: () => {
       toast.success("Contribution forwarded to CEO");
       queryClient.invalidateQueries({ queryKey: ["contributions", "director", profile?.productId] });
-=======
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
-import { Navbar } from '@/components/Navbar';
-import { StatusBadge } from '@/components/StatusBadge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle, XCircle } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { fetchContributionsForDirector, approveContribution, rejectContribution } from '@/services/contributionService';
-import type { ContributionWithDetails } from '@/types/domain';
-
-export default function DirectorDashboard() {
-  const { profile } = useAuth();
-  const queryClient = useQueryClient();
-  const [rejectionComments, setRejectionComments] = useState<{ [key: string]: string }>({});
-
-  const { data: contributions = [], isLoading } = useQuery<ContributionWithDetails[]>({
-    queryKey: ['contributions', 'director', profile?.id],
-    queryFn: () => {
-      if (!profile?.id || !profile.product_id) throw new Error('Director profile incomplete');
-      return fetchContributionsForDirector(profile.id, profile.product_id);
-    },
-    enabled: !!profile?.id && !!profile.product_id,
-  });
-
-  const approveMutation = useMutation({
-    mutationFn: (contributionId: string) => {
-      if (!profile?.id) throw new Error('Not authenticated');
-      return approveContribution(contributionId, profile.id, 'director');
-    },
-    onSuccess: () => {
-      toast.success('Contribution approved!');
-      queryClient.invalidateQueries({ queryKey: ['contributions', 'director'] });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to approve contribution');
->>>>>>> Stashed changes
     },
     onError: (error: any) => toast.error(error.message ?? "Approval failed"),
   });
 
   const rejectMutation = useMutation({
-<<<<<<< Updated upstream
     mutationFn: ({ id, comment }: { id: string; comment: string }) =>
       rejectContribution(id, comment, "rejected_by_director", profile!.id),
     onSuccess: () => {
@@ -147,20 +104,6 @@ export default function DirectorDashboard() {
       setRejectionComments({});
     },
     onError: (error: any) => toast.error(error.message ?? "Rejection failed"),
-=======
-    mutationFn: ({ contributionId, comment }: { contributionId: string; comment: string }) => {
-      if (!profile?.id) throw new Error('Not authenticated');
-      return rejectContribution(contributionId, profile.id, 'director', comment);
-    },
-    onSuccess: () => {
-      toast.success('Contribution rejected');
-      queryClient.invalidateQueries({ queryKey: ['contributions', 'director'] });
-      setRejectionComments({});
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to reject contribution');
-    },
->>>>>>> Stashed changes
   });
 
   const createManagerMutation = useMutation({

@@ -17,8 +17,10 @@ import NotFound from "./pages/not-found";
 type RouteGuardProps = {
   component: React.ComponentType;
   allowedRoles?: string[];
-}) {
-  const { user, isLoading } = useAuth();
+};
+
+function ProtectedRoute({ component: Component, allowedRoles }: RouteGuardProps) {
+  const { session, profile, isLoading, needsOnboarding } = useAuth();
 
   if (isLoading) {
     return (
@@ -32,7 +34,11 @@ type RouteGuardProps = {
     return <Redirect to="/login" />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  if (needsOnboarding) {
+    return <Redirect to="/onboarding" />;
+  }
+
+  if (allowedRoles && profile && !allowedRoles.includes(profile.role)) {
     return <Redirect to="/" />;
   }
 
@@ -46,7 +52,15 @@ function HomePage() {
     return <Redirect to="/login" />;
   }
 
-  switch (user.role) {
+  if (needsOnboarding) {
+    return <Redirect to="/onboarding" />;
+  }
+
+  if (!profile) {
+    return <Redirect to="/login" />;
+  }
+
+  switch (profile.role) {
     case 'employee':
       return <Redirect to="/employee/contribute" />;
     case "manager":
@@ -64,6 +78,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/onboarding" component={Onboarding} />
       <Route path="/">
         {() => <ProtectedRoute component={HomePage} />}
       </Route>

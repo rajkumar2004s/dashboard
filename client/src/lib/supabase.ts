@@ -4,37 +4,15 @@ import type { Database } from "@/types/supabase";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-<<<<<<< Updated upstream
-const FALLBACK_URL = "http://localhost:54321";
-const FALLBACK_ANON = "local-anon-key";
-
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
-
-if (!isSupabaseConfigured) {
-  console.warn(
-    "[supabase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Falling back to local Supabase defaults. Update your environment variables to connect to a hosted project."
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    "Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file."
   );
 }
 
-export const supabase = createClient<Database>(
-  isSupabaseConfigured ? supabaseUrl! : FALLBACK_URL,
-  isSupabaseConfigured ? supabaseAnonKey! : FALLBACK_ANON,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
-  }
-);
-=======
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.');
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
   },
 });
->>>>>>> Stashed changes

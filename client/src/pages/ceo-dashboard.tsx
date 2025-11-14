@@ -9,7 +9,6 @@ import {
   BarElement,
   PointElement,
   LineElement,
-<<<<<<< Updated upstream
   Title,
   Tooltip,
   Legend,
@@ -23,15 +22,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { fetchContributionsByRole, fetchTopContributors, updateContributionStatus } from "@/services/contributionService";
 import type { ContributionWithRelations, TopContributor } from "@/types/domain";
 import { queryClient } from "@/lib/queryClient";
-=======
-  Title, 
-  Tooltip, 
-  Legend 
-} from 'chart.js';
-import { Pie, Bar, Doughnut, Line } from 'react-chartjs-2';
-import { fetchAllContributions, getTopContributors } from '@/services/contributionService';
-import type { ContributionWithDetails, TopContributor } from '@/types/domain';
->>>>>>> Stashed changes
 
 ChartJS.register(
   ArcElement,
@@ -64,8 +54,9 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default function CeoDashboard() {
-<<<<<<< Updated upstream
   const { profile } = useAuth();
+  const isCEO = profile?.role === "ceo";
+  
   const {
     data: contributions = [],
     isLoading,
@@ -76,16 +67,7 @@ export default function CeoDashboard() {
         role: "ceo",
         userId: profile?.id ?? "",
       }),
-=======
-  const { data: contributions = [], isLoading } = useQuery<ContributionWithDetails[]>({
-    queryKey: ['contributions', 'all'],
-    queryFn: fetchAllContributions,
-  });
-
-  const { data: topContributorsData = [] } = useQuery<TopContributor[]>({
-    queryKey: ['top-contributors'],
-    queryFn: () => getTopContributors(5),
->>>>>>> Stashed changes
+    enabled: Boolean(profile?.id && isCEO),
   });
 
   const { data: topContributors = [] } = useQuery<TopContributor[]>({
@@ -114,6 +96,24 @@ export default function CeoDashboard() {
     directorEscalations,
   } = useMemo(() => buildAnalytics(contributions), [contributions]);
 
+  if (!isCEO) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex h-[70vh] items-center justify-center px-6">
+          <Card className="max-w-xl border border-border">
+            <CardHeader>
+              <CardTitle>CEO Access Required</CardTitle>
+              <CardDescription>
+                You need CEO-level permissions to view this dashboard. Contact your administrator if you believe this is an error.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -125,107 +125,6 @@ export default function CeoDashboard() {
     );
   }
 
-<<<<<<< Updated upstream
-=======
-  const totalContributions = contributions.length;
-  const pendingApprovals = contributions.filter(c => 
-    c.status === 'submitted_to_manager' || c.status === 'approved_by_manager'
-  ).length;
-  const fullyApproved = contributions.filter(c => c.status === 'approved_by_director').length;
-  const rejected = contributions.filter(c => 
-    c.status === 'rejected_by_manager' || c.status === 'rejected_by_director'
-  ).length;
-
-  const productContributions = contributions.reduce((acc, c) => {
-    const product = c.productName || c.productId;
-    acc[product] = (acc[product] || 0) + c.contributionPercent;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const departmentContributions = contributions.reduce((acc, c) => {
-    const dept = c.departmentName || c.departmentId;
-    acc[dept] = (acc[dept] || 0) + c.contributionPercent;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const statusCounts = {
-    'Submitted': contributions.filter(c => c.status === 'submitted_to_manager').length,
-    'Manager Approved': contributions.filter(c => c.status === 'approved_by_manager').length,
-    'Director Approved': contributions.filter(c => c.status === 'approved_by_director').length,
-    'Rejected': rejected,
-  };
-
-  const productPieData = {
-    labels: Object.keys(productContributions),
-    datasets: [{
-      data: Object.values(productContributions),
-      backgroundColor: [colors.chart1, colors.chart2, colors.chart4],
-      borderWidth: 0,
-    }],
-  };
-
-  const departmentBarData = {
-    labels: Object.keys(departmentContributions),
-    datasets: [{
-      label: 'Total Contribution %',
-      data: Object.values(departmentContributions),
-      backgroundColor: colors.chart3,
-      borderWidth: 0,
-    }],
-  };
-
-  const statusDoughnutData = {
-    labels: Object.keys(statusCounts),
-    datasets: [{
-      data: Object.values(statusCounts),
-      backgroundColor: [colors.chart1, colors.chart2, colors.chart3, colors.chart5],
-      borderWidth: 0,
-    }],
-  };
-
-  const monthlyData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [{
-      label: 'Contributions Submitted',
-      data: [12, 19, 15, 25, 22, 30],
-      borderColor: colors.chart1,
-      backgroundColor: colors.chart1,
-      tension: 0.1,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-    }],
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom' as const,
-      },
-    },
-  };
-
-  const barOptions = {
-    ...chartOptions,
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-  };
-
-  // Use top contributors from RPC function, fallback to local calculation
-  const topContributors = topContributorsData.length > 0
-    ? topContributorsData.map((tc, idx) => ({
-        name: tc.contributor_name,
-        total: tc.contribution_total,
-        count: tc.contribution_count,
-        rank: idx + 1,
-      }))
-    : [];
-
->>>>>>> Stashed changes
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -266,7 +165,6 @@ export default function CeoDashboard() {
               <CardDescription>Based on cumulative contribution percentage across all submissions.</CardDescription>
             </CardHeader>
             <CardContent>
-<<<<<<< Updated upstream
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -377,93 +275,6 @@ export default function CeoDashboard() {
             </CardContent>
           </Card>
         </section>
-=======
-              <div className="h-80">
-                <Pie data={productPieData} options={chartOptions} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold mb-4">Department Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <Bar data={departmentBarData} options={barOptions} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold mb-4">Approval Status Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <Doughnut data={statusDoughnutData} options={chartOptions} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold mb-4">Monthly Trend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <Line data={monthlyData} options={chartOptions} />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Top Contributors</CardTitle>
-            <CardDescription>Employees with highest total contributions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead className="font-semibold text-sm uppercase tracking-wide">Rank</TableHead>
-                    <TableHead className="font-semibold text-sm uppercase tracking-wide">Employee</TableHead>
-                    <TableHead className="font-semibold text-sm uppercase tracking-wide">Total Contribution</TableHead>
-                    <TableHead className="font-semibold text-sm uppercase tracking-wide">Submissions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {topContributors.length > 0 ? (
-                    topContributors.map((contributor, index) => (
-                      <TableRow key={contributor.name} className={index % 2 === 1 ? 'bg-muted/20' : ''}>
-                        <TableCell className="font-semibold">
-                          {index === 0 && '🥇'}
-                          {index === 1 && '🥈'}
-                          {index === 2 && '🥉'}
-                          {index > 2 && `#${index + 1}`}
-                        </TableCell>
-                        <TableCell className="font-medium" data-testid={`text-contributor-${index}`}>
-                          {contributor.name}
-                        </TableCell>
-                        <TableCell className="font-mono font-semibold">{contributor.total}%</TableCell>
-                        <TableCell>{contributor.count}</TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                        No contributors yet
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
->>>>>>> Stashed changes
       </div>
     </div>
   );
@@ -491,8 +302,8 @@ function buildAnalytics(contributions: ContributionWithRelations[]) {
   const directorEscalations: ContributionWithRelations[] = [];
 
   contributions.forEach((item) => {
-    const productKey = item.productName ?? item.productId;
-    const departmentKey = item.departmentName ?? item.departmentId;
+    const productKey = item.productName ?? item.productId ?? "Unknown";
+    const departmentKey = item.departmentName ?? item.departmentId ?? "Unknown";
     productTotals[productKey] = (productTotals[productKey] ?? 0) + item.contributionPercent;
     departmentTotals[departmentKey] = (departmentTotals[departmentKey] ?? 0) + item.contributionPercent;
     statusTotals[item.status] = (statusTotals[item.status] ?? 0) + 1;
@@ -512,32 +323,35 @@ function buildAnalytics(contributions: ContributionWithRelations[]) {
     }
   });
 
+  // Handle empty data gracefully
   const productBreakdown = {
-    labels: Object.keys(productTotals),
+    labels: Object.keys(productTotals).length > 0 ? Object.keys(productTotals) : ["No Data"],
     datasets: [
       {
-        data: Object.values(productTotals),
+        data: Object.keys(productTotals).length > 0 ? Object.values(productTotals) : [1],
         backgroundColor: [COLORS.chart1, COLORS.chart2, COLORS.chart3, COLORS.chart4, COLORS.chart5],
       },
     ],
   };
 
   const departmentBreakdown = {
-    labels: Object.keys(departmentTotals),
+    labels: Object.keys(departmentTotals).length > 0 ? Object.keys(departmentTotals) : ["No Data"],
     datasets: [
       {
         label: "Contribution %",
-        data: Object.values(departmentTotals),
+        data: Object.keys(departmentTotals).length > 0 ? Object.values(departmentTotals) : [0],
         backgroundColor: COLORS.chart3,
       },
     ],
   };
 
   const statusBreakdown = {
-    labels: Object.keys(statusTotals).map((key) => STATUS_LABELS[key] ?? key),
+    labels: Object.keys(statusTotals).length > 0 
+      ? Object.keys(statusTotals).map((key) => STATUS_LABELS[key] ?? key)
+      : ["No Data"],
     datasets: [
       {
-        data: Object.values(statusTotals),
+        data: Object.keys(statusTotals).length > 0 ? Object.values(statusTotals) : [1],
         backgroundColor: [COLORS.chart1, COLORS.chart2, COLORS.chart3, COLORS.chart4, COLORS.chart5],
       },
     ],
@@ -545,11 +359,11 @@ function buildAnalytics(contributions: ContributionWithRelations[]) {
 
   const orderedMonths = Object.keys(monthlyTotals);
   const monthlyTrend = {
-    labels: orderedMonths,
+    labels: orderedMonths.length > 0 ? orderedMonths : ["No Data"],
     datasets: [
       {
         label: "Submissions",
-        data: orderedMonths.map((month) => monthlyTotals[month]),
+        data: orderedMonths.length > 0 ? orderedMonths.map((month) => monthlyTotals[month]) : [0],
         borderColor: COLORS.chart1,
         backgroundColor: COLORS.chart1,
         tension: 0.3,

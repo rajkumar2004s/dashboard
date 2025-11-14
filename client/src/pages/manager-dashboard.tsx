@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
@@ -83,52 +82,10 @@ export default function ManagerDashboard() {
     },
     onError: (error: any) => {
       toast.error(error.message ?? "Failed to approve contribution");
-=======
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
-import { Navbar } from '@/components/Navbar';
-import { StatusBadge } from '@/components/StatusBadge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle, XCircle } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { fetchContributionsForManager, approveContribution, rejectContribution } from '@/services/contributionService';
-import type { ContributionWithDetails } from '@/types/domain';
-
-export default function ManagerDashboard() {
-  const { profile } = useAuth();
-  const queryClient = useQueryClient();
-  const [rejectionComments, setRejectionComments] = useState<{ [key: string]: string }>({});
-
-  const { data: contributions = [], isLoading } = useQuery<ContributionWithDetails[]>({
-    queryKey: ['contributions', 'manager', profile?.id],
-    queryFn: () => {
-      if (!profile?.id || !profile.department_id) throw new Error('Manager profile incomplete');
-      return fetchContributionsForManager(profile.id, profile.department_id);
-    },
-    enabled: !!profile?.id && !!profile.department_id,
-  });
-
-  const approveMutation = useMutation({
-    mutationFn: (contributionId: string) => {
-      if (!profile?.id) throw new Error('Not authenticated');
-      return approveContribution(contributionId, profile.id, 'manager');
-    },
-    onSuccess: () => {
-      toast.success('Contribution approved!');
-      queryClient.invalidateQueries({ queryKey: ['contributions', 'manager'] });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to approve contribution');
->>>>>>> Stashed changes
     },
   });
 
   const rejectMutation = useMutation({
-<<<<<<< Updated upstream
     mutationFn: ({ contributionId, comment }: { contributionId: string; comment: string }) =>
       rejectContribution(contributionId, comment, "rejected_by_manager", profile!.id),
     onSuccess: () => {
@@ -138,19 +95,6 @@ export default function ManagerDashboard() {
     },
     onError: (error: any) => {
       toast.error(error.message ?? "Failed to reject contribution");
-=======
-    mutationFn: ({ contributionId, comment }: { contributionId: string; comment: string }) => {
-      if (!profile?.id) throw new Error('Not authenticated');
-      return rejectContribution(contributionId, profile.id, 'manager', comment);
-    },
-    onSuccess: () => {
-      toast.success('Contribution rejected');
-      queryClient.invalidateQueries({ queryKey: ['contributions', 'manager'] });
-      setRejectionComments({});
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to reject contribution');
->>>>>>> Stashed changes
     },
   });
 

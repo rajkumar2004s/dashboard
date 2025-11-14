@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
@@ -12,22 +11,6 @@ import { Input } from "@/components/ui/input";
 import { fetchDepartments, fetchProducts } from "@/services/catalogService";
 import { createContributions } from "@/services/contributionService";
 import { queryClient } from "@/lib/queryClient";
-=======
-import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { useAuth } from '@/contexts/AuthContext';
-import { Navbar } from '@/components/Navbar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'react-toastify';
-import { fetchProducts, fetchDepartments } from '@/services/catalogService';
-import { createContribution } from '@/services/contributionService';
-import type { Product, Department } from '@/types/domain';
->>>>>>> Stashed changes
 
 interface ContributionEntry {
   productId: string;
@@ -37,7 +20,6 @@ interface ContributionEntry {
 export default function EmployeeForm() {
   const { profile } = useAuth();
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
-<<<<<<< Updated upstream
   const [entries, setEntries] = useState<Record<string, number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,44 +33,6 @@ export default function EmployeeForm() {
     queryKey: ["departments"],
     queryFn: () => fetchDepartments(),
     staleTime: 1000 * 60 * 5,
-=======
-  const [contributions, setContributions] = useState<ProductContribution[]>([]);
-
-  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
-    queryKey: ['products'],
-    queryFn: fetchProducts,
-  });
-
-  const { data: allDepartments = [], isLoading: departmentsLoading } = useQuery<Department[]>({
-    queryKey: ['departments'],
-    queryFn: fetchDepartments,
-  });
-
-  const submitMutation = useMutation({
-    mutationFn: async (contributions: ProductContribution[]) => {
-      if (!profile?.id) throw new Error('User not authenticated');
-      
-      // Create all contributions
-      const promises = contributions.map(c =>
-        createContribution({
-          employeeId: profile.id,
-          productId: c.productId,
-          departmentId: c.departmentId,
-          contributionPercent: c.percentage,
-        })
-      );
-      
-      await Promise.all(promises);
-    },
-    onSuccess: () => {
-      toast.success('Contribution submitted successfully!');
-      setSelectedProducts(new Set());
-      setContributions([]);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to submit contribution');
-    },
->>>>>>> Stashed changes
   });
 
   const department = useMemo(
@@ -146,7 +90,6 @@ export default function EmployeeForm() {
       return;
     }
 
-<<<<<<< Updated upstream
     const payload: ContributionEntry[] = Array.from(selectedProducts.values()).map((productId) => ({
       productId,
       percentage: entries[productId] ?? 0,
@@ -173,9 +116,6 @@ export default function EmployeeForm() {
     } finally {
       setIsSubmitting(false);
     }
-=======
-    submitMutation.mutate(contributions);
->>>>>>> Stashed changes
   };
 
   if (!profile) {
@@ -302,19 +242,8 @@ export default function EmployeeForm() {
             </CardContent>
           </Card>
 
-<<<<<<< Updated upstream
           <Button type="submit" className="w-full" disabled={!isValid || isSubmitting}>
             {isSubmitting ? "Submitting..." : "Submit Contribution"}
-=======
-          <Button
-            type="submit"
-            variant="default"
-            className="w-full"
-            disabled={!isValid || submitMutation.isPending}
-            data-testid="button-submit"
-          >
-            {submitMutation.isPending ? 'Submitting...' : 'Submit Contribution'}
->>>>>>> Stashed changes
           </Button>
         </form>
       </div>

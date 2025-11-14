@@ -30,11 +30,8 @@ export default function Onboarding() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!needsOnboarding && profile) {
-      navigate("/");
-    }
-  }, [needsOnboarding, profile, navigate]);
+  // Allow direct access to onboarding - don't redirect away
+  // Users can access /onboarding directly to update their profile
 
   useEffect(() => {
     (async () => {
@@ -68,7 +65,10 @@ export default function Onboarding() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!role || !session?.user) return;
+    if (!role || !session?.user) {
+      toast.error("Please sign in first.");
+      return;
+    }
     if (!canSubmit) {
       toast.error("Please fill in the required information.");
       return;
@@ -82,11 +82,21 @@ export default function Onboarding() {
         productId: role === "ceo" ? null : productId || null,
         departmentId: roleRequiresDepartment ? departmentId : null,
       });
-      toast.success("Profile completed successfully!");
-      navigate("/");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to complete onboarding. Please try again.");
+      toast.success("Profile completed successfully! Redirecting...");
+      // Small delay to show success message
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
+    } catch (error: any) {
+      console.error("Onboarding error:", error);
+      const errorMessage = error?.message || error?.error?.message || "Failed to complete onboarding.";
+      
+      // Check if it's an RLS error
+      if (errorMessage.includes("policy") || errorMessage.includes("RLS") || errorMessage.includes("permission")) {
+        toast.error("Database permissions issue. Please run the SQL fix in Supabase. See FIX_RLS_NOW.md");
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
